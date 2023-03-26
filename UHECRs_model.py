@@ -45,6 +45,12 @@ data_Flux_a8     = data+'flux_a8.dat'                              # Auger Flux 
 data_2MRS        = fileProj+'2MRS_data/2mrs_1175_done.dat'         # 2MRS catalog
 data_2MRS_lowM   = fileProj+'2MRS_data/2MRS_debil23_5.txt'         # 2MRS catalog of low luminosities Mabs > - 23.5
 
+data_LVS         = fileProj+'data/VLS/VLS.txt'
+data_LVS_SF      = fileProj+'data/VLS/VLS_SF.txt'
+data_LVS_Passive = fileProj+'data/VLS/VLS_Passive.txt'
+data_LVS_Faint   = fileProj+'data/VLS/VLS_Faint.txt'
+data_LVS_Bright  = fileProj+'data/VLS/VLS_Bright.txt'
+
 ####################################################################################
 ####################################################################################
 
@@ -66,8 +72,21 @@ df_Auger = pd.read_table(data_Events_a8, skiprows=33, names= cols_Auger, sep="\s
 #                               'b/a', 'flgs', 'type', 'ts', 'v', 'e_v', 'c'], sep="\s+",\
 #                         index_col=False)
 
-cols_gxs = ['ID', 'RAdeg', 'DECdeg', 'cz', 'Ktmag_abs', 'l_deg', 'b_deg']
-df_gxs = pd.read_table(data_2MRS_lowM, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+#cols_gxs = ['ID', 'RAdeg', 'DECdeg', 'cz', 'Ktmag_abs', 'l_deg', 'b_deg']
+#df_gxs = pd.read_table(data_2MRS_lowM, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+cols_gxs = [ 'RAdeg', 'DECdeg', 'Kcmag', 'Hcmag', 'Jcmag', 'Ktmag', 'K_abs', 'type', 'cz',
+             'JNAME', 'W1mag', 'W2mag', 'W3mag', 'class(1AGN,2SF,3Passive)']
+df_LVS         = pd.read_table(data_LVS, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+df_LVS_SF      = pd.read_table(data_LVS_SF, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+df_LVS_Passive = pd.read_table(data_LVS_Passive, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+df_LVS_Faint   = pd.read_table(data_LVS_Faint, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+df_LVS_Bright  = pd.read_table(data_LVS_Bright, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+    
+df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
+
+##########################################################################################################
+# 0) We first make random map of event for the UHECRs
+##########################################################################################################
 
 # Define the number of galaxies and the size of the map
 n_evnt = 50000
@@ -93,9 +112,9 @@ def rdm_sample(n_evnt):
     colat_array = np.arccos( costheta )
     lat_array   = 0.5*np.pi - colat_array       # colat_array - 0.5*np.pi
 
-    cols_df_rdm = { 'l (rad)': lat_array,
+    cols_df_rdm = { 'l (rad)': lon_array,
                     'colat (rad)': colat_array,
-                    'b (rad)': lon_array
+                    'b (rad)': lat_array
                   }
     df_rdm = pd.DataFrame( data= cols_df_rdm )
     # Consider the cut in declinations > 45.0 deg
@@ -108,13 +127,13 @@ df_rdm = df_rdm[ df_rdm['colat (rad)'] > np.deg2rad(45.01) ]
 # Adjust the sample to have the number of observed UHECRs by Auger
 n_CRs   = len(df_Auger)                                          # Number of observations
 
-n_rdm   = 20000                                                  # Number of rdm event in our model
+n_rdm   = 26000                                                  # Number of rdm event in our model
 id_rdm  = df_rdm.index                                           # This variable contains all the index of the df_rdm
 list_id = id_rdm.tolist()                                        # Here we transform it to a list for do iterations below...
 id_pick = random.sample( list_id, n_rdm )                        # We choose the n_rdm indices of uhe_events from the df_rdm sample...
 df_rdm_pick = df_rdm.loc[ id_pick ]                              # We choose those events from dr_rdm
 
-th_rdm, phi_rdm = df_rdm_pick['colat (rad)'].to_numpy(), df_rdm_pick['b (rad)'].to_numpy()
+th_rdm, phi_rdm = df_rdm_pick['colat (rad)'].to_numpy(), df_rdm_pick['l (rad)'].to_numpy()
 ipix_uhe     = hp.ang2pix( nside, th_rdm, phi_rdm, lonlat=False )      # This associated to each direction a pixel
 
 # The map with events
@@ -165,10 +184,6 @@ def hp_plot(map, title, Tmin, Tmax, output_file):
     The figure with the map in Mollweide projection.
     '''
     
-#    import numpy as np
-#    import healpy as hp
-#    import matplotlib.pyplot as plt
-
     colormap = 'viridis'
     plt.figure()
     hp.mollview(map, coord='C', unit='Events [counts]', xsize=800,
@@ -244,8 +259,149 @@ output_file = graficos+'skymap_rdm_contrib_model.png'
 sky_plot( th_rdm, phi_rdm, th_str, phi_str, coord_sys, title, output_file )
 
 
+##########################################################################################################
+# 1) Now we consider a random distribution of points taking into account the exposure of the
+#    the Pierre Auger Observatory.
+##########################################################################################################
 
+#    Let us notice that the exposure is energy dependent and somewhat related to theta_max
+def exposure(dec, theta_max):
+    ''' Produces a uniform random sample of points in the unit sphere
+        
+    Parameters
+    ----------
+    dec : float
+        Declination of the incoming direction (in radians).
+    th_max : float
+        Maximum zenith angle in the dataset (in radians).
+        
+    Returns
+    -------
+    A pandas dataframe with the events
+    '''
+    
+    theta_max = np.radians(theta_max)      # Maximum zenith angle in the dataset
+    lat = np.radians(-35.23)               # Latitude of the center of the array (near Malargüe - Argentina)
+    
+    arg = ( np.cos(theta_max) - np.sin(lat) * np.sin(dec) ) / ( np.cos(lat) * np.cos(dec) )
+    hm = np.arccos( arg.clip(-1, 1) )
+    # Let us notice that the formula above is equivalent to the expresson for alpha_m in section 2 of
+    # the article of Sommers P., Astroparticle Physics 2001, 271.
+    
+    return np.cos(lat) * np.cos(dec) * np.sin(hm) + hm * np.sin(lat) * np.sin(dec)
+
+theta_max = 80.0                           # This was selection criteria for the data set with E >= 8EeV in
+                                           #   Piere Auger Observatory, Science 357, 1266–1270 (2017)
+# We plot the exposure
+plt.figure()
+d = 0.5 * np.pi * np.arange( -1.0, 1.0, 0.005 )
+y = exposure( d, theta_max )
+y_max = max(y)
+plt.plot( np.rad2deg(d), y/y_max, linestyle = 'dotted', markersize=2, label='lat=-35.23 deg \n'+r'$\theta_{max}$ = 60 deg')
+plt.title('Exposure for the Pierre Auger Observatory')
+plt.xlabel('RA (deg)')
+plt.ylabel('Relative exposure [dimensionless]')
+plt.legend()
+plt.savefig(graficos+'exposureAuger.png')
+plt.close()
+
+
+def rdm_sample_exposureAuger(n_evnt, theta_max):
+    ''' Produces a random sample of points in the unit sphere
+        consistent with the exposure of the Pierre Auger Observatory.
+        
+    Parameters
+    ----------
+    n_events : int
+        The total number of events of the map
+        
+    Returns
+    -------
+    A pandas dataframe with the events
+    '''
+    
+    n_evnt *= 5
+    
+    # uniform rdm in phi
+    lon_array   = np.random.uniform( low= 0.0 , high= 2*np.pi, size= n_evnt )
+    
+    # uniform rdm in cos(theta)
+    costheta    = np.random.uniform( low= -1.0, high= 1.0    , size= n_evnt )
+    colat_array = np.arccos( costheta )
+    lat_array   = 0.5*np.pi - colat_array       # colat_array - 0.5*np.pi
+   
+    # unifrom rdm in the range of the exposure
+    y_min = 0.0
+    y_max = exposure( 0.5 * np.pi * (-1.0 + 0.005), theta_max )
+    y_samples = np.random.uniform(y_min, y_max, size= n_evnt)    # rdm in the range of the pdf (exposure)
+    
+    # We filter those having values less than the exposure
+    x_samples = lat_array
+    accepted = y_samples < exposure( x_samples, theta_max )      # we retain only those points behind the value of exposure
+    x_accepted = x_samples[accepted]
+    y_accepted = y_samples[accepted] / y_max
+
+    
+    n_evnt = int(n_evnt/5)
+    cols_df_rdm = { 'l (rad)': lon_array[0:n_evnt],
+                    'colat (rad)': 0.5* np.pi - x_accepted[0:n_evnt],
+                    'b (rad)': x_accepted[0:n_evnt],
+                    'y_samples' : y_accepted[0:n_evnt]
+                  }
+    df_rdm = pd.DataFrame( data= cols_df_rdm )
+    return df_rdm
+
+
+df_rdmExposure  = rdm_sample_exposureAuger(n_evnt, theta_max)
+th_rdm, phi_rdm = df_rdmExposure['colat (rad)'].to_numpy(), df_rdmExposure['l (rad)'].to_numpy()
+
+# We plot the sample of points drawn from the distribution that match the exposure
+y_max = exposure( 0.5 * np.pi * (-1.0 + 0.005), theta_max )
+plt.figure()
+x = np.linspace(-90.0,90.0,200)
+y = exposure( np.deg2rad(x), theta_max )/y_max
+plt.plot( x, y, 'r', linewidth=2, label='Relative exposure')
+y_accepted = df_rdmExposure['y_samples'].to_numpy()
+plt.scatter( 90.0 - np.rad2deg(th_rdm), y_accepted, s=2, label='Sampled points')
+plt.title('Random sample consistent with the relative exposure')
+plt.xlabel('RA (deg)')
+plt.ylabel('Relative exposure [dimensionless]')
+plt.legend()
+plt.savefig(graficos+'rdm_sample_exposureAuger.png')
+plt.close()
+
+
+# We make a random map of events consistent with the exposure...
+#n_rdm         = 20000                                                  # Number of rdm event in our model (yet defined above)
+id_rdmEp      = df_rdmExposure.index                                   # This variable contains all the index of the df_rdm
+list_idEp     = id_rdmEp.tolist()                                      # Here we transform it to a list for do iterations below...
+id_pickEp     = random.sample( list_idEp, n_rdm )                      # We choose the n_rdm indices of uhe_events from the df_rdm sample...
+df_rdm_pickEp = df_rdmExposure.loc[ id_pickEp ]                                 # We choose those events from dr_rdm
+
+#th_rdm, phi_rdm = df_rdm_pick['colat (rad)'].to_numpy(), df_rdm_pick['l (rad)'].to_numpy()
+th_rdm, phi_rdm = df_rdm_pickEp['colat (rad)'].to_numpy(), df_rdm_pickEp['l (rad)'].to_numpy()
+ipix_Ep     = hp.ang2pix( nside, th_rdm, phi_rdm, lonlat=False )      # This associated to each direction a pixel
+
+# make the healpy map
+rdmEp_map = map_events( nside, n_rdm, ipix_Ep )
+
+# plot of the healpy map
+Tmin, Tmax = np.min(rdmEp_map), np.max(rdmEp_map)
+output_file = graficos+'hpmap_rdm+exposure_contrib_model.png'
+title = 'Random component to the model of UHECRs incoming events'
+hp_plot( rdmEp_map, title, Tmin, Tmax, output_file )
+
+# sky map with the events
+th_str, phi_str = 'Dec (deg)', 'RA (deg)'
+coord_sys = 'Equatorial'
+output_file = graficos+'skymap_rdm+exposure_contrib_model.png'
+sky_plot( th_rdm, phi_rdm, th_str, phi_str, coord_sys, title, output_file )
+
+
+##########################################################################################################
 # 2) The gaussian contribution
+##########################################################################################################
+
 # create Gaussian distribution around the position of galaxies
 # Note: The generalization of the gaussian pdf into the unit 2-sphere can be done in several
 #       ways. One of them is the von Mises-Fisher, other the Kent pdf. There exist others.
@@ -309,7 +465,7 @@ def rotate_points(points, rot):
     # The convention her is that of Goldstein (1951) 'Classical Mechanics'.
     # In order to rotate a vector at x = [1,0,0] to the position of a galaxy in
     # (Dec, RA) the Euler angles are given by:
-    #  phi = latitude - 90,      theta = latitude      and      psi = 90.0.
+    #  phi = longitude - 90,      theta = latitude      and      psi = 90.0.
     
     # It return the coordinates of the rotated vector in the original coordinate system
     # Then, given the coordinate of the no-rotated points we multiply it by the transverse
@@ -321,7 +477,7 @@ df_sample   = df_gxs
 th_gxs_str  = 'DECdeg'
 phi_gxs_str = 'RAdeg'
 points = []
-sigma = 10.0                                              # std in deg
+sigma = 35.0                                              # std in deg
 for i in range(0, len(df_sample)):
     vec_gauss_events = generate_gaussian_points( np.rint( (n_CRs - n_rdm)/len(df_sample) ), sigma )
     th_i  = df_sample[th_gxs_str][i]
@@ -364,9 +520,25 @@ output_file = graficos+'skymap_gxs_smaple.png'
 sky_plot( th_gxs, phi_gxs, th_str, phi_str, coord_sys, title, output_file )
 
 
+# We also need to build a mask for events above DEC > 45 deg
+#uhemap  = rdm_map + gsn_map
+uh_mask = np.ones( hp.nside2npix(nside) )
+ipix    = np.arange(0, hp.nside2npix(nside) )
+ang     = hp.pix2ang(nside, ipix)
+uh_mask = np.where( ang[0] < np.deg2rad(45), 0, 1 )
 
+# plot of the healpy map of the mask
+Tmin, Tmax = np.min(uh_mask), np.max(uh_mask)
+output_file = graficos+'hpmap_mask.png'
+title = 'Maks for the UHECRs incoming events'
+hp_plot( uh_mask, title, Tmin, Tmax, output_file )
+
+
+##########################################################################################################
 # 3) The final model with the sum: rnd + gaussian
-uhemap  = rdm_map + gsn_map
+##########################################################################################################
+uhemap  = rdmEp_map + gsn_map
+uhemap  = np.where( uh_mask == 1, uhemap, uh_mask )
 
 # plot of the healpy map
 Tmin, Tmax = np.min(uhemap), np.max(uhemap)
@@ -375,6 +547,8 @@ title = 'Model of UHECRs incoming events'
 hp_plot( uhemap, title, Tmin, Tmax, output_file )
 
 # plot of the scatter plot
-th_CRs, phi_CRs = np.concatenate((th_rdm, th_gxs), axis=0), np.concatenate((phi_rdm, phi_gxs), axis=0)
+th_CRs, phi_CRs = np.concatenate((th_rdm, th_gsn), axis=0), np.concatenate((phi_rdm, phi_gsn), axis=0)
 output_file = graficos+'skymap_model.png'
 sky_plot( th_CRs, phi_CRs, th_str, phi_str, coord_sys, title, output_file )
+
+
