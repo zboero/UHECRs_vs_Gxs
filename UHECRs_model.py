@@ -43,7 +43,7 @@ data_Events_a8   = data+'events_a8.dat'                            # Auger Event
 data_Flux_a8     = data+'flux_a8.dat'                              # Auger Flux for energies with En > 8Eev
 
 data_2MRS        = fileProj+'2MRS_data/2mrs_1175_done.dat'         # 2MRS catalog
-data_2MRS_lowM   = fileProj+'2MRS_data/2MRS_debil23_5.txt'         # 2MRS catalog of low luminosities Mabs > - 23.5
+#data_2MRS_lowM   = fileProj+'2MRS_data/2MRS_debil23_5.txt'         # 2MRS catalog of low luminosities Mabs > - 23.5
 
 data_LVS         = fileProj+'data/VLS/VLS.txt'
 data_LVS_SF      = fileProj+'data/VLS/VLS_SF.txt'
@@ -66,11 +66,11 @@ import random
 cols_Auger = ['year', 'day', 'dec', 'RA', 'azimuth', 'weight']
 df_Auger = pd.read_table(data_Events_a8, skiprows=33, names= cols_Auger, sep="\s+", index_col=False)
 
-#df_gxs   = pd.read_table(data_2MRS, skiprows=10,\
-#                         names=['RAdeg', 'DECdeg', 'l', 'b', 'k_c', 'h_c', 'j_c', 'k_tc', 'h_tc', 'j_tc',\
-#                               'e_k', 'e_h', 'e_j', 'e_kt', 'e_ht', 'e_jt', 'e_bv', 'r_iso', 'r_ext',\
-#                               'b/a', 'flgs', 'type', 'ts', 'v', 'e_v', 'c'], sep="\s+",\
-#                         index_col=False)
+df_2MRS   = pd.read_table(data_2MRS, skiprows=10,\
+                         names=['RAdeg', 'DECdeg', 'l', 'b', 'k_c', 'h_c', 'j_c', 'k_tc', 'h_tc', 'j_tc',\
+                               'e_k', 'e_h', 'e_j', 'e_kt', 'e_ht', 'e_jt', 'e_bv', 'r_iso', 'r_ext',\
+                               'b/a', 'flgs', 'type', 'ts', 'v', 'e_v', 'c'], sep="\s+",\
+                         index_col=False)
 
 #cols_gxs = ['ID', 'RAdeg', 'DECdeg', 'cz', 'Ktmag_abs', 'l_deg', 'b_deg']
 #df_gxs = pd.read_table(data_2MRS_lowM, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
@@ -82,7 +82,10 @@ df_LVS_Passive = pd.read_table(data_LVS_Passive, skiprows=1, names= cols_gxs, se
 df_LVS_Faint   = pd.read_table(data_LVS_Faint, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
 df_LVS_Bright  = pd.read_table(data_LVS_Bright, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
     
-df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
+#df_gxs = df_LVS_Bright
+#df_gxs = df_LVS_Faint
+#df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
+df_gxs = pd.concat([df_LVS_SF, df_LVS_Passive]).reset_index(drop=True)
 
 ##########################################################################################################
 # 0) We first make random map of event for the UHECRs
@@ -352,6 +355,7 @@ def rdm_sample_exposureAuger(n_evnt, theta_max):
     return df_rdm
 
 
+# Without exposure...
 df_rdmExposure  = rdm_sample_exposureAuger(n_evnt, theta_max)
 th_rdm, phi_rdm = df_rdmExposure['colat (rad)'].to_numpy(), df_rdmExposure['l (rad)'].to_numpy()
 
@@ -376,7 +380,7 @@ plt.close()
 id_rdmEp      = df_rdmExposure.index                                   # This variable contains all the index of the df_rdm
 list_idEp     = id_rdmEp.tolist()                                      # Here we transform it to a list for do iterations below...
 id_pickEp     = random.sample( list_idEp, n_rdm )                      # We choose the n_rdm indices of uhe_events from the df_rdm sample...
-df_rdm_pickEp = df_rdmExposure.loc[ id_pickEp ]                                 # We choose those events from dr_rdm
+df_rdm_pickEp = df_rdmExposure.loc[ id_pickEp ]                        # We choose those events from dr_rdm
 
 #th_rdm, phi_rdm = df_rdm_pick['colat (rad)'].to_numpy(), df_rdm_pick['l (rad)'].to_numpy()
 th_rdm, phi_rdm = df_rdm_pickEp['colat (rad)'].to_numpy(), df_rdm_pickEp['l (rad)'].to_numpy()
@@ -453,7 +457,7 @@ def rotate_points(points, rot):
     c_ps = np.cos(ps)
     s_ps = np.sin(ps)
     r_11 = c_ph * c_ps - s_ph * c_th * s_ps
-    r_12 = s_ph * c_ps + c_ph * c_th * s_ps #s_ph * c_ps + c_ph * c_th * s_ps
+    r_12 = s_ph * c_ps + c_ph * c_th * s_ps #s_ph * c_ps + c_ph * c_th * s_ps
     r_13 = s_th * s_ps
     r_21 = - c_ph * s_ps - s_ph * c_th * c_ps
     r_22 = c_ph * c_th * c_ps - s_ph * s_ps
@@ -479,7 +483,7 @@ phi_gxs_str = 'RAdeg'
 points = []
 sigma = 35.0                                              # std in deg
 for i in range(0, len(df_sample)):
-    vec_gauss_events = generate_gaussian_points( np.rint( (n_CRs - n_rdm)/len(df_sample) ), sigma )
+    vec_gauss_events = generate_gaussian_points( np.rint( (n_CRs - n_rdm)/len(df_sample) ) + 1, sigma )
     th_i  = df_sample[th_gxs_str][i]
     phi_i = df_sample[phi_gxs_str][i]
     rot_i    = np.deg2rad( np.mod(phi_i - 90, 360) ), np.deg2rad( th_i ), np.deg2rad(90.0)
@@ -487,7 +491,7 @@ for i in range(0, len(df_sample)):
         points_i = rotate_points(vec_gauss_events[j], rot_i)
         points.append(points_i)
 
-
+        accepted = y_samples < exposure( x_samples, theta_max )
 x_point = [item[0] for item in points]
 y_point = [item[1] for item in points]
 z_point = [item[2] for item in points]
@@ -497,7 +501,7 @@ n_gsn = int( np.rint( (n_CRs - n_rdm)/len(df_sample) ) * len(df_sample) )
 ipix_gsn = hp.vec2pix( nside, x_point, y_point, z_point )
 gsn_map  = map_events( nside, n_gsn, ipix_gsn )
 
-# The plot with the healp map
+# The plot with the healpy map
 Tmin, Tmax = np.min(gsn_map), np.max(gsn_map)
 output_file = graficos+'hpmap_gsn_contrib_model.png'
 title = 'Gaussian component to the model of UHECRs incoming events'
@@ -546,8 +550,16 @@ output_file = graficos+'hpmap_model.png'
 title = 'Model of UHECRs incoming events'
 hp_plot( uhemap, title, Tmin, Tmax, output_file )
 
+
 # plot of the scatter plot
 th_CRs, phi_CRs = np.concatenate((th_rdm, th_gsn), axis=0), np.concatenate((phi_rdm, phi_gsn), axis=0)
+cols_df_CRs = { 'colat (rad)' : th_CRs,           # colatitude in radians
+                'l (rad)'     : phi_CRs           # longitude  in radians
+              }
+df_CRs = pd.DataFrame( data= cols_df_CRs )
+df_CRs = df_CRs[ df_CRs['colat (rad)'] > np.deg2rad(45.01) ]
+th_CRs = df_CRs['colat (rad)'].to_numpy()
+phi_CRs= df_CRs['l (rad)'].to_numpy()
 output_file = graficos+'skymap_model.png'
 sky_plot( th_CRs, phi_CRs, th_str, phi_str, coord_sys, title, output_file )
 
