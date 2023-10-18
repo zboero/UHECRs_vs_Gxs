@@ -208,7 +208,7 @@ sky_plot( th_uhe, phi_uhe, th_str, phi_str, coord_sys, title, output_file )
 diff_map = Auger_map - uhemap
 
 
-# plot of the healpy map
+# plot - healpy map of the difference...
 Tmin, Tmax = np.min(diff_map), np.max(diff_map)
 output_file = graficos+'hpmap_diff_AugerE8-model.png'
 title = 'Difference between measurements and model'
