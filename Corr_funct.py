@@ -86,10 +86,14 @@ df_2MRSxWISE_VLS_d1d5         = pd.read_table(data_2MRSxWISE_VLS_d1d5, skiprows=
 df_2MRSVLS_passive_cropd5     = pd.read_table(data_2MRSVLS_passive_cropd5, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
 
 #df_gxs = df_2MRS
-#df_gxs = df_LVS_Bright
-#df_gxs = df_LVS_Faint    
 #df_gxs = df_LVS_SF
 #df_gxs = df_LVS_Passive
+#df_gxs = df_LVS_Faint
+#df_gxs = df_LVS_Bright
+#df_gxs = df_2MRSxWISE_VLS
+#df_gxs = df_2MRSxWISE_VLS_passivecrop
+#df_gxs = df_2MRSxWISE_VLS_d1d5
+#df_gxs = df_2MRSVLS_passive_cropd5
 df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
 
 ##########################################################################################################
@@ -129,7 +133,7 @@ def rdm_sample(n_evnt):
     return df_rdm
     
 df_rdm_gxs = rdm_sample( n_evnt )
-df_rdm_gxs = df_rdm_gxs[ df_rdm_gxs['colat (rad)'] > np.deg2rad(45.0001) ]
+df_rdm_gxs = df_rdm_gxs[ df_rdm_gxs['colat (rad)'] > np.deg2rad(45.0001) ]     # Aplicamos el corte en colatitud de Auger
 
 # Adjust the sample to have the number equal to the number of galaxies in our sample
 n_gxs   = len(df_gxs)                                            # Number of galaxies
@@ -189,7 +193,7 @@ def sky_plot( th, phi, th_str, phi_str, coord_sys, title, output_file ):
     plt.savefig( output_file )
     #plt.savefig(graficos+'vMF_dist.png')
 
-
+# plot: we plot the random sample that we built...
 th_rdm        = df_rdm_gxs['colat (rad)'].to_numpy()
 phi_rdm       = df_rdm_gxs['l (rad)'].to_numpy()
 th_str, phi_str = 'Dec (deg)', 'RA (deg)'
@@ -200,7 +204,7 @@ sky_plot( th_rdm, phi_rdm, th_str, phi_str, coord_sys, title, output_file )
 
 
 # We now compute the correlation function between this map and the Auger map
-# Define the radial profile function
+# Define the radial profile function 
 def radial_profile( th, phi, th_gxs, phi_gxs, bins ):
     ''' Radial profile around the position of galaxies
     Parameters
