@@ -90,15 +90,16 @@ df_2MRSVLS_passive_cropd5     = pd.read_table(data_2MRSVLS_passive_cropd5, skipr
 #df_gxs = df_LVS_Passive
 #df_gxs = df_LVS_Faint
 #df_gxs = df_LVS_Bright
-#df_gxs = df_2MRSxWISE_VLS
+df_gxs = df_2MRSxWISE_VLS
 #df_gxs = df_2MRSxWISE_VLS_passivecrop
-df_gxs = df_2MRSxWISE_VLS_d1d5
+#df_gxs = df_2MRSxWISE_VLS_d1d5
 #df_gxs = df_2MRSVLS_passive_cropd5
 
 #df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
 
 # Filters...
-df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 2]
+#df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 3]
+df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 3]
 
 ##########################################################################################################
 # 0) We first compute the number of pairs (rdm_gxs/UHECRs) at a given radius
@@ -312,17 +313,19 @@ err = 0.5 * ( err_high_boot - err_low_boot )
 
 
 # We plot the correlation function
-output_file = graficos+'xCross_SF+Passive_vs_model.png'
-xCorr_
+output_file = graficos+'xCross_SF+Passive_vs_Auger.png'#model.png'
+xCorr_SF  = xCorr_measured
+xCorr_Passive  = xCorr_measured
 plt.figure()
 #plt.fill_between( np.rad2deg( bins[1:] ), xCorr - err, xCorr + err, color='darkcyan', alpha=0.4, linestyle='solid' )
-plt.plot( np.rad2deg( bins[1:] ), xCorr, color='darkcyan', label='Cross-Corr SF+Passive', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), xCorr_SF, color='darkcyan', label='Cross-Corr SF', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), xCorr_Passive, color='magenta', label='Cross-Corr Passive', linestyle='solid' )
 #
 #plt.title ( 'Correlation function', loc='center', fontsize='x-large')
 plt.xlabel( 'Angle[deg]', fontsize='x-large')
 plt.ylabel( 'Amplitude', fontsize='x-large')
 plt.axes
-#plt.ylim(-0.01,0.25)
+plt.ylim(-0.01,0.25)
 plt.legend(loc='upper right', fontsize='large', markerscale=3.0)
 plt.savefig(output_file)
 plt.tight_layout()
