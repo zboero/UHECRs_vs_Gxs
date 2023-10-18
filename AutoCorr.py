@@ -100,8 +100,8 @@ df_gxs = df_2MRSxWISE_VLS
 # Filters...
 df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 2]
      # Faints....
-df_gxs = df_gxs[ df_gxs['K_abs'] < -22.0 ]   
-df_gxs = df_gxs[ df_gxs['K_abs'] > -23.2 ]
+#df_gxs = df_gxs[ df_gxs['K_abs'] < -22.0 ]   
+#df_gxs = df_gxs[ df_gxs['K_abs'] > -23.2 ]
      # Brights...
 #df_gxs = df_gxs[ df_gxs['K_abs'] < -23.2 ]   
 #df_gxs = df_gxs[ df_gxs['K_abs'] > -26.0 ]
@@ -276,7 +276,7 @@ def aCorr( th_rdm, phi_rdm, th_gxs, phi_gxs, bins ):
         prof_gxs_i = radial_profile( th_gxs[i], phi_gxs[i], th_gxs, phi_gxs, bins )
         prof_gxs += prof_gxs_i
 
-    Corr_func = prof_gxs / prof_rdm - 1.0
+    aCorr_func = prof_gxs / prof_rdm - 1.0
     
     return aCorr_func
 
