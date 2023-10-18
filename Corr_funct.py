@@ -98,8 +98,13 @@ df_gxs = df_2MRSxWISE_VLS
 #df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
 
 # Filters...
-#df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 3]
-df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 3]
+df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 2]
+     # Faints....
+df_gxs = df_gxs[ df_gxs['K_abs'] < -22.0 ]   
+df_gxs = df_gxs[ df_gxs['K_abs'] > -23.2 ]
+     # Brights...
+#df_gxs = df_gxs[ df_gxs['K_abs'] < -23.2 ]   
+#df_gxs = df_gxs[ df_gxs['K_abs'] > -26.0 ]
 
 ##########################################################################################################
 # 0) We first compute the number of pairs (rdm_gxs/UHECRs) at a given radius
@@ -313,13 +318,13 @@ err = 0.5 * ( err_high_boot - err_low_boot )
 
 
 # We plot the correlation function
-output_file = graficos+'xCross_SF+Passive_vs_Auger.png'#model.png'
-xCorr_SF  = xCorr_measured
-xCorr_Passive  = xCorr_measured
+output_file = graficos+'xCross_SF_Bright+Faint_vs_Auger.png'#model.png'
+xCorr_Faint  = xCorr_measured
+xCorr_Bright  = xCorr_measured
 plt.figure()
 #plt.fill_between( np.rad2deg( bins[1:] ), xCorr - err, xCorr + err, color='darkcyan', alpha=0.4, linestyle='solid' )
-plt.plot( np.rad2deg( bins[1:] ), xCorr_SF, color='darkcyan', label='Cross-Corr SF', linestyle='solid' )
-plt.plot( np.rad2deg( bins[1:] ), xCorr_Passive, color='magenta', label='Cross-Corr Passive', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), xCorr_Faint, color='magenta', label='Cross-Corr SF_Faint', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), xCorr_Bright, color='darkcyan', label='Cross-Corr SF_Bright', linestyle='solid' )
 #
 #plt.title ( 'Correlation function', loc='center', fontsize='x-large')
 plt.xlabel( 'Angle[deg]', fontsize='x-large')
