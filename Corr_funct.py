@@ -79,7 +79,12 @@ df_LVS_SF      = pd.read_table(data_LVS_SF, skiprows=1, names= cols_gxs, sep="\s
 df_LVS_Passive = pd.read_table(data_LVS_Passive, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
 df_LVS_Faint   = pd.read_table(data_LVS_Faint, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
 df_LVS_Bright  = pd.read_table(data_LVS_Bright, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
-    
+
+df_2MRSxWISE_VLS              = pd.read_table(data_2MRSxWISE_VLS, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+df_2MRSxWISE_VLS_passivecrop  = pd.read_table(data_2MRSxWISE_VLS_passivecrop, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+df_2MRSxWISE_VLS_d1d5         = pd.read_table(data_2MRSxWISE_VLS_d1d5, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+df_2MRSVLS_passive_cropd5     = pd.read_table(data_2MRSVLS_passive_cropd5, skiprows=1, names= cols_gxs, sep="\s+", index_col=False)
+
 #df_gxs = df_2MRS
 #df_gxs = df_LVS_Bright
 #df_gxs = df_LVS_Faint    
