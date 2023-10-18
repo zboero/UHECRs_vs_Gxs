@@ -46,6 +46,11 @@ data_LVS_Passive = fileProj+'data/VLS/VLS_Passive.txt'
 data_LVS_Faint   = fileProj+'data/VLS/VLS_Faint.txt'
 data_LVS_Bright  = fileProj+'data/VLS/VLS_Bright.txt'
 
+data_2MRSxWISE_VLS              = fileProj+'data/VLS/2MRSxWISE_VLS.txt'               # Ultimas muestras 18/10/2023
+data_2MRSxWISE_VLS_passivecrop  = fileProj+'data/VLS/2MRSxWISE_VLS_passivecrop.txt'   # Ultimas muestras 18/10/2023
+data_2MRSxWISE_VLS_d1d5         = fileProj+'data/VLS/2MRSxWISE_VLS_d1d5.txt'
+data_2MRSVLS_passive_cropd5     = fileProj+'data/VLS/2MRSVLS_passive_cropd5.txt'
+
 ####################################################################################
 ####################################################################################
 
