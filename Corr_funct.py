@@ -92,9 +92,10 @@ df_2MRSVLS_passive_cropd5     = pd.read_table(data_2MRSVLS_passive_cropd5, skipr
 #df_gxs = df_LVS_Bright
 #df_gxs = df_2MRSxWISE_VLS
 #df_gxs = df_2MRSxWISE_VLS_passivecrop
-#df_gxs = df_2MRSxWISE_VLS_d1d5
+df_gxs = df_2MRSxWISE_VLS_d1d5
 #df_gxs = df_2MRSVLS_passive_cropd5
-df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
+
+#df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
 
 ##########################################################################################################
 # 0) We first compute the number of pairs (rdm_gxs/UHECRs) at a given radius
@@ -283,8 +284,8 @@ th_rdm        = df_rdm_gxs['colat (rad)'].to_numpy()
 phi_rdm       = df_rdm_gxs['l (rad)'].to_numpy()
 th_gxs        = np.deg2rad( 90.0 - df_gxs['DECdeg'].to_numpy() )
 phi_gxs       = np.deg2rad( df_gxs['RAdeg'].to_numpy() )
-th_uhe_model  = th_CRs
-phi_uhe_model = phi_CRs
+th_uhe_model  = th_uhe #th_CRs                # Si use Augerdata --> th_uhe si use UHECRs_model --> th_CRs
+phi_uhe_model = phi_uhe #phi_CRs              # Si use Augerdata --> phi_uhe si use UHECRs_model --> phi_CRs
 #th_uhe_model  = np.deg2rad( 90.0 - df_Auger['DECdeg'].to_numpy() )
 #phi_uhe_model = np.deg2rad( df_Auger['RAdeg'].to_numpy() )
 
