@@ -280,4 +280,52 @@ def aCorr( th_rdm, phi_rdm, th_gxs, phi_gxs, bins ):
     
     return aCorr_func
 
+##########################################################################################################
+# 1) We now compute the number of pairs (gxs/UHECRs) at a given radius
+##########################################################################################################
+
+# We compute the cross-correlation function
+th_rdm        = df_rdm_gxs['colat (rad)'].to_numpy()
+phi_rdm       = df_rdm_gxs['l (rad)'].to_numpy()
+th_gxs        = np.deg2rad( 90.0 - df_gxs['DECdeg'].to_numpy() )
+phi_gxs       = np.deg2rad( df_gxs['RAdeg'].to_numpy() )
+
+bins = np.deg2rad( np.arange(5,91,5) )
+aCorr_measured = aCorr(th_rdm, phi_rdm, th_gxs, phi_gxs, bins)
+
+# We compute the bootstrap error..
+n_boots   = 20
+idx_boots = np.random.choice( len(th_gxs), size=( n_boots, len(th_gxs) ), replace=True )
+xCorr_list_boots = []#np.array([])
+for i in range( 0, n_boots ):
+    th_gxs_i  = th_gxs[ idx_boots[i] ]
+    phi_gxs_i = phi_gxs[ idx_boots[i] ]
+    xCorr_i = aCorr(th_rdm, phi_rdm, th_gxs_i, phi_gxs_i, bins)
+    xCorr_list_boots.append( xCorr_i )
+    
+percentiles = np.percentile( xCorr_list_boots, np.array( [15.87,84.13] ), axis=0 )
+err_low_boot  = percentiles[0]
+err_high_boot = percentiles[1]
+err = 0.5 * ( err_high_boot - err_low_boot )
+
+
+# We plot the correlation function
+output_file = graficos+'aCross_SF_Bright+Faint_vs_Auger.png'#model.png'
+aCorr_Faint  = aCorr_measured
+aCorr_Bright  = aCorr_measured
+plt.figure()
+#plt.fill_between( np.rad2deg( bins[1:] ), aCorr - err, aCorr + err, color='darkcyan', alpha=0.4, linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), aCorr_Faint, color='magenta', label='Auto-Corr SF_Faint', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), aCorr_Bright, color='darkcyan', label='Auto-Corr SF_Bright', linestyle='solid' )
+#
+#plt.title ( 'Auto-Correlation function', loc='center', fontsize='x-large')
+plt.xlabel( 'Angle[deg]', fontsize='x-large')
+plt.ylabel( 'Amplitude', fontsize='x-large')
+plt.axes
+plt.ylim(-0.01,0.25)
+plt.legend(loc='upper right', fontsize='large', markerscale=3.0)
+plt.savefig(output_file)
+plt.tight_layout()
+plt.close()
+
 
