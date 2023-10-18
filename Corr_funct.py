@@ -97,6 +97,9 @@ df_gxs = df_2MRSxWISE_VLS_d1d5
 
 #df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
 
+# Filters...
+df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 2]
+
 ##########################################################################################################
 # 0) We first compute the number of pairs (rdm_gxs/UHECRs) at a given radius
 ##########################################################################################################
@@ -310,6 +313,7 @@ err = 0.5 * ( err_high_boot - err_low_boot )
 
 # We plot the correlation function
 output_file = graficos+'xCross_SF+Passive_vs_model.png'
+xCorr_
 plt.figure()
 #plt.fill_between( np.rad2deg( bins[1:] ), xCorr - err, xCorr + err, color='darkcyan', alpha=0.4, linestyle='solid' )
 plt.plot( np.rad2deg( bins[1:] ), xCorr, color='darkcyan', label='Cross-Corr SF+Passive', linestyle='solid' )
