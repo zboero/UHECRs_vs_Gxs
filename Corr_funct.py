@@ -290,18 +290,17 @@ phi_uhe_model = phi_uhe #phi_CRs              # Si use Augerdata --> phi_uhe si 
 #phi_uhe_model = np.deg2rad( df_Auger['RAdeg'].to_numpy() )
 
 bins = np.deg2rad( np.arange(5,91,5) )
-xCorr = xCorr(th_rdm, phi_rdm, th_gxs, phi_gxs, th_uhe_model, phi_uhe_model, bins)
+xCorr_measured = xCorr(th_rdm, phi_rdm, th_gxs, phi_gxs, th_uhe_model, phi_uhe_model, bins)
 
 # We compute the bootstrap error..
 n_boots   = 20
 idx_boots = np.random.choice( len(th_gxs), size=( n_boots, len(th_gxs) ), replace=True )
 xCorr_list_boots = []#np.array([])
 for i in range( 0, n_boots ):
-    th_gxs  = th_gxs[ idx_boots[i] ]
-    phi_gxs = phi_gxs[ idx_boots[i] ]
-    xCorr_i = xCorr(th_rdm, phi_rdm, th_gxs, phi_gxs, th_uhe_model, phi_uhe_model , bins)
-    xCorr_i_list = xCorr_i.tolist()
-    xCorr_list_boots.append( xCorr_i_list )
+    th_gxs_i  = th_gxs[ idx_boots[i] ]
+    phi_gxs_i = phi_gxs[ idx_boots[i] ]
+    xCorr_i = xCorr(th_rdm, phi_rdm, th_gxs_i, phi_gxs_i, th_uhe_model, phi_uhe_model, bins)
+    xCorr_list_boots.append( xCorr_i )
     
 percentiles = np.percentile( xCorr_list_boots, np.array( [15.87,84.13] ), axis=0 )
 err_low_boot  = percentiles[0]
