@@ -300,7 +300,8 @@ for i in range( 0, n_boots ):
     th_gxs  = th_gxs[ idx_boots[i] ]
     phi_gxs = phi_gxs[ idx_boots[i] ]
     xCorr_i = xCorr(th_rdm, phi_rdm, th_gxs, phi_gxs, th_uhe_model, phi_uhe_model , bins)
-    xCorr_list_boots.append( xCorr_i )
+    xCorr_i_list = xCorr_i.tolist()
+    xCorr_list_boots.append( xCorr_i_list )
     
 percentiles = np.percentile( xCorr_list_boots, np.array( [15.87,84.13] ), axis=0 )
 err_low_boot  = percentiles[0]
