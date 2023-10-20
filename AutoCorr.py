@@ -98,13 +98,15 @@ df_gxs = df_2MRSxWISE_VLS
 #df_gxs = pd.concat([df_LVS_Faint, df_LVS_Bright]).reset_index(drop=True)
 
 # Filters...
-df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 2]
+#df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 2]
      # Faints....
-#df_gxs = df_gxs[ df_gxs['K_abs'] < -22.0 ]   
-#df_gxs = df_gxs[ df_gxs['K_abs'] > -23.2 ]
+# df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] != 1 ]   
+# df_gxs = df_gxs[ df_gxs['K_abs'] < -22.0 ]   
+# df_gxs = df_gxs[ df_gxs['K_abs'] > -23.2 ]
      # Brights...
-#df_gxs = df_gxs[ df_gxs['K_abs'] < -23.2 ]   
-#df_gxs = df_gxs[ df_gxs['K_abs'] > -26.0 ]
+df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] != 1 ]   
+df_gxs = df_gxs[ df_gxs['K_abs'] < -23.2 ]   
+df_gxs = df_gxs[ df_gxs['K_abs'] > -26.0 ]
 
 ##########################################################################################################
 # 0) We first compute the number of pairs (rdm_gxs/UHECRs) at a given radius
@@ -310,19 +312,19 @@ err = 0.5 * ( err_high_boot - err_low_boot )
 
 
 # We plot the correlation function
-output_file = graficos+'aCross_SF_Bright+Faint_vs_Auger.png'#model.png'
+output_file = graficos+'aCross_Bright_vs_Faint_VLS.png'#model.png'
 aCorr_Faint  = aCorr_measured
 aCorr_Bright  = aCorr_measured
 plt.figure()
 #plt.fill_between( np.rad2deg( bins[1:] ), aCorr - err, aCorr + err, color='darkcyan', alpha=0.4, linestyle='solid' )
-plt.plot( np.rad2deg( bins[1:] ), aCorr_Faint, color='magenta', label='Auto-Corr SF_Faint', linestyle='solid' )
-plt.plot( np.rad2deg( bins[1:] ), aCorr_Bright, color='darkcyan', label='Auto-Corr SF_Bright', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), aCorr_Faint, color='purple', label='Auto-Corr Faint', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), aCorr_Bright, color='green', label='Auto-Corr Bright', linestyle='solid' )
 #
 #plt.title ( 'Auto-Correlation function', loc='center', fontsize='x-large')
 plt.xlabel( 'Angle[deg]', fontsize='x-large')
 plt.ylabel( 'Amplitude', fontsize='x-large')
 plt.axes
-plt.ylim(-0.01,0.25)
+plt.ylim(-0.14,1.35)
 plt.legend(loc='upper right', fontsize='large', markerscale=3.0)
 plt.savefig(output_file)
 plt.tight_layout()
