@@ -90,8 +90,8 @@ df_2MRSVLS_passive_cropd5     = pd.read_table(data_2MRSVLS_passive_cropd5, skipr
 #df_gxs = df_LVS_Passive
 #df_gxs = df_LVS_Faint
 #df_gxs = df_LVS_Bright
-df_gxs = df_2MRSxWISE_VLS
-#df_gxs = df_2MRSxWISE_VLS_passivecrop
+#df_gxs = df_2MRSxWISE_VLS
+df_gxs = df_2MRSxWISE_VLS_passivecrop
 #df_gxs = df_2MRSxWISE_VLS_d1d5
 #df_gxs = df_2MRSVLS_passive_cropd5
 
@@ -100,11 +100,13 @@ df_gxs = df_2MRSxWISE_VLS
 # Filters...
 df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] == 2]
      # Faints....
+#df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] != 1]
 df_gxs = df_gxs[ df_gxs['K_abs'] < -22.0 ]   
 df_gxs = df_gxs[ df_gxs['K_abs'] > -23.2 ]
      # Brights...
-#df_gxs = df_gxs[ df_gxs['K_abs'] < -23.2 ]   
-#df_gxs = df_gxs[ df_gxs['K_abs'] > -26.0 ]
+# df_gxs = df_gxs[ df_gxs['class(1AGN,2SF,3Passive)'] != 1]
+# df_gxs = df_gxs[ df_gxs['K_abs'] < -23.2 ]   
+# df_gxs = df_gxs[ df_gxs['K_abs'] > -26.0 ]
 
 ##########################################################################################################
 # 0) We first compute the number of pairs (rdm_gxs/UHECRs) at a given radius
@@ -318,12 +320,12 @@ err = 0.5 * ( err_high_boot - err_low_boot )
 
 
 # We plot the correlation function
-output_file = graficos+'xCross_SF_Bright+Faint_vs_Auger.png'#model.png'
+output_file = graficos+'xCross_SF_Bright+Faint_vs_Auger_crop.png'#model.png'
 xCorr_Faint  = xCorr_measured
 xCorr_Bright  = xCorr_measured
 plt.figure()
 #plt.fill_between( np.rad2deg( bins[1:] ), xCorr - err, xCorr + err, color='darkcyan', alpha=0.4, linestyle='solid' )
-plt.plot( np.rad2deg( bins[1:] ), xCorr_Faint, color='magenta', label='Cross-Corr SF_Faint', linestyle='solid' )
+plt.plot( np.rad2deg( bins[1:] ), xCorr_Faint, color='magenta', label='Cross-Corr SF_Faint ', linestyle='solid' )
 plt.plot( np.rad2deg( bins[1:] ), xCorr_Bright, color='darkcyan', label='Cross-Corr SF_Bright', linestyle='solid' )
 #
 #plt.title ( 'Correlation function', loc='center', fontsize='x-large')
